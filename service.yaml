@@ -1,0 +1,18 @@
+kind: Service
+apiVersion: v1
+metadata: 
+ name: "tomcat-in-the-cloud"
+ creationTimestamp: null
+ labels: 
+  run: "tomcat-in-the-cloud"
+spec:
+ clusterIP: None 
+ ports: 
+  - 
+   protocol: TCP
+   port: 80
+   targetPort: 8080
+ selector: 
+  run: "tomcat-in-the-cloud"
+status: 
+ loadBalancer: 

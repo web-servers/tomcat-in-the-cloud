@@ -1,4 +1,4 @@
-# Tomcat Clustering in OpenShift
+# Tomcat Clustering in OpenShift - DNS-Ping
 
 Tomcat-in-the-cloud is the current name of the project that seeks to port Tomcat clustering into cloud services such as Kubernetes and OpenShift.
 
@@ -28,7 +28,7 @@ $ eval $(minishift docker-env)
 $ oc login -u admin -p password
 ```
 
-4. Create a new project. Again, we will call it tomcat-in-the-cloud but feel free to use the one you'd like
+4. Create a new project. We will call it tomcat-in-the-cloud. Make sure you use the same project name to run the prototype.
 ```sh
 $ oc new-project tomcat-in-the-cloud
 ```
@@ -38,19 +38,24 @@ $ oc new-project tomcat-in-the-cloud
 $ docker login -u $(oc whoami) -p $(oc whoami -t) $(minishift openshift registry)
 ```
 
-6. If not already done, clone the repository and change directory to get to its root
+6. If not already done, clone and build the repository and change directory to get to its root
 ```sh
 $ git clone https://github.com/web-servers/tomcat-in-the-cloud.git
 $ cd tomcat-in-the-cloud
 ```
 
-7. Build the docker image providing the war file of the application you would like to deploy (relative path). You also have to specify the registry_id which is the name of your Openshift project
+7. Run the script `setup.sh` to clone and build dependencies
 ```sh
-$ docker build --build-arg war=[war_file] --build-arg registry_id=$(oc project -q) . -t $(minishift openshift registry)/$(oc project -q)/image
+$ ./setup.sh
+```
+
+8. Run the Docker image
+```sh
+$ docker build --build-arg war=sample.war --build-arg registry_id=$(oc project -q) . -t $(minishift openshift registry)/$(oc project -q)/image
 ```
 The name of the project can be retreived using ```$(oc project -q)```.
 
-8. Push the resulting docker image onto the docker registry
+9. Push the resulting docker image onto the docker registry
 ```sh
 $ docker push $(minishift openshift registry)/$(oc project -q)/image
 ```
@@ -63,14 +68,14 @@ Once built and pushed on the docker registry, we need to run and expose the dock
 $ oc policy add-role-to-user view system:serviceaccount:$(oc project -q):default -n $(oc project -q)
 ```
 
-2. Run the docker image into one container
+2. Create the deployment
 ```sh
-$ kubectl run $(oc project -q) --image=$(minishift openshift registry)/$(oc project -q)/image:latest --port 8080
+$ kubectl create -f deployment.yaml
 ```
 
-3. Expose the deployment on port 80 for it to be accessible
+3. Create the service
 ```sh
-$ kubectl expose deployment $(oc project -q) --type=LoadBalancer --port 80 --target-port 8080
+$ kubectl create -f service.yaml
 ```
 
 Your clustered application should now be up and running, you can connect to Openshift GUI using ```$ minishift console```. When done simply log in and manage your application!

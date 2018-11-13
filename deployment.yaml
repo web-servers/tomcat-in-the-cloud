@@ -1,0 +1,32 @@
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: tomcat-in-the-cloud
+  creationTimestamp: 
+  labels:
+    run: tomcat-in-the-cloud
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      run: tomcat-in-the-cloud
+  template:
+    metadata:
+      creationTimestamp: 
+      labels:
+        run: tomcat-in-the-cloud
+    spec:
+      containers:
+      - name: tomcat-in-the-cloud
+        image: 172.30.1.1:5000/tomcat-in-the-cloud/image
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        resources: {}
+  strategy: {}
+status: {}
